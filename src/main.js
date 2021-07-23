@@ -46,6 +46,9 @@ import {
     CheckboxGroup,
     CheckboxButton,
     Row,
+    Radio,
+    RadioButton,
+    RadioGroup,
     Col,
     Upload,
     Loading,
@@ -94,6 +97,9 @@ Vue.use(CheckboxButton)
 Vue.use(Checkbox)
 Vue.use(Row)
 Vue.use(Col)
+Vue.use(RadioGroup)
+Vue.use(Radio)
+Vue.use(RadioButton)
 Vue.use(Upload)
 Vue.prototype.$message = Message;
 Vue.prototype.$confirm = MessageBox.confirm;

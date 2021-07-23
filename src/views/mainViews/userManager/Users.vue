@@ -207,7 +207,7 @@ import {
   putUpdateUserRole,
   deleteUserById
 } from "@/api"
-import {mapMutations, mapState} from 'vuex'
+import {mapState} from 'vuex'
 
 
 export default {
@@ -261,17 +261,13 @@ export default {
   },
   created(){
     this.getUsersList();
-    this.updateBreadcrumpList([
-      {key:'userManager',name:'用户管理'},
-      {key:'users',name:'用户列表'}
-    ])
+
 
   },
   computed:{
     ...mapState(['rolesList']),
   },
   methods:{
-    ...mapMutations(['updateBreadcrumpList']),
     indexMethod(val){
       return val + 1 + this.currentPageSize*(this.currentPage-1);
     },

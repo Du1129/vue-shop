@@ -17,7 +17,19 @@ const AddOrEditGood = () => import("@/views/mainViews/goodsManager/components/Ad
 const Params = () => import("@/views/mainViews/goodsManager/Params")
 const Categories = () => import("@/views/mainViews/goodsManager/Categories")
 const Reports = () => import("@/views/mainViews/dataView/Reports")
+const notFound = () => import("@/views/notFound")
 
+const routeMap = {
+  users:{path:'/users',name:'users',component:Users},
+  roles:{path:'/roles',name:'roles',component:Roles},
+  rights:{path:'/rights',name:'Rights',component:Rights},
+  orders:{path:'/orders',name:'orders',component:Orders},
+  goods:{path:'/goods',name:'goods',component:Goods},
+  goodsAdd:{path:'/goods/:from',name:'addOrEdit',component:AddOrEditGood,props:true},
+  params:{path:'/params',name:'params',component:Params},
+  categories:{path:'/categories',name:'categories',component:Categories},
+  reports:{path:'/reports',name:'reports',component:Reports}
+}
 
 const routes = [
   {
@@ -36,16 +48,20 @@ const routes = [
     children:[
       {path:'/',redirect:'/welcome'},
       {path:'/welcome',name:'welcome',component:Welcome},
-      {path:'/users',name:'users',component:Users},
-      {path:'/roles',name:'roles',component:Roles},
-      {path:'/rights',name:'Rights',component:Rights},
-      {path:'/orders',name:'orders',component:Orders},
-      {path:'/goods',name:'goods',component:Goods},
       {path:'/goods/:from',name:'addOrEdit',component:AddOrEditGood,props:true},
-      {path:'/params',name:'params',component:Params},
-      {path:'/categories',name:'categories',component:Categories},
-      {path:'/reports',name:'reports',component:Reports}
+      // {path:'/users',name:'users',component:Users},
+      // {path:'/roles',name:'roles',component:Roles},
+      // {path:'/rights',name:'Rights',component:Rights},
+      // {path:'/orders',name:'orders',component:Orders},
+      // {path:'/goods',name:'goods',component:Goods},
+      // {path:'/goods/:from',name:'addOrEdit',component:AddOrEditGood,props:true},
+      // {path:'/params',name:'params',component:Params},
+      // {path:'/categories',name:'categories',component:Categories},
+      // {path:'/reports',name:'reports',component:Reports}
     ]
+  },
+  {
+    path:"*",component:notFound
   }
 ]
 
@@ -65,5 +81,17 @@ router.beforeEach((to,from,next) => {
     next()
   }
 })
+
+export const initDynamicRoutes = () => {
+  const routeArr = router.options.routes
+  const subMenuList = JSON.parse(sessionStorage.getItem("subMenuList"));
+  subMenuList.forEach(item =>{
+    item.children.forEach(cItem => {
+      routeArr[2].children.push(routeMap[cItem.path])
+    })
+  })
+  //让该路由规则重新启动
+  router.addRoutes(routeArr)
+}
 
 export default router

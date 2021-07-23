@@ -43,7 +43,7 @@
             <el-form-item label="商品重量(单位：kg)" prop="goods_weight">
               <el-input type="number" v-model="goodForm.goods_weight"></el-input>
             </el-form-item>
-            <el-form-item label="商品分类" prop="goods_cat">
+            <el-form-item v-if="!$route.query.id" label="商品分类" prop="goods_cat">
               <el-cascader
                   v-model="goodForm.goods_cat"
                   :options="categoriesList"
@@ -131,7 +131,7 @@
 
 //富文本编辑器
 import E from 'wangeditor'
-import {getParamsByCatId,addGoodsPost} from "@/api";
+import {getGoodDataById,getParamsByCatId,addGoodsPost,editGoodsPut} from "@/api";
 
 
 import {myMixin} from "@/mixin";
@@ -178,10 +178,14 @@ export default {
       },
       previewImgUrl:null,
       imgPreviewFlag:false,
+      goodCatId:null,
     }
   },
   created() {
     console.log(this.$route.query.id)
+    if(this.$route.query.id) {
+      this.getGoodInfoById(this.$route.query.id);
+    }
   },
   mounted() {
     const editor = new E('#subTextContainer')
@@ -197,9 +201,32 @@ export default {
   methods:{
     validateBasicInfo(){
       if(!this.goodForm.goods_cat&&this.activeTab === "0") {
-        this.$message.error('请选择商品分类！')
-        return false
+        if(!this.$route.query.id) {
+          this.$message.error('请选择商品分类！')
+          return false
+        }
       }
+    },
+    async getGoodInfoById(id){
+      const {data} = await getGoodDataById(id)
+      const {goods_name,goods_price,goods_number,
+        goods_weight,goods_introduce,cat_id,cat_one_id,cat_two_id,attrs
+      } = data;
+      this.goodForm.goods_name =goods_name;
+      this.goodForm.goods_price =goods_price;
+      this.goodForm.goods_number =goods_number;
+      this.goodForm.goods_weight =goods_weight;
+      this.goodForm.goods_introduce =goods_introduce;
+      this.goodForm.goods_cat = [cat_one_id,cat_two_id,cat_id];
+      this.goodCatId = cat_id;
+      this.onlyChecksList = attrs.filter(item => item.attr_sel === "only")
+      let manyTemp = attrs.filter(item => item.attr_sel === "many")
+      manyTemp.map(item =>{
+        item.attr_vals = item.attr_vals?item.attr_vals.split(' '):null
+      });
+      this.manyChecksList = manyTemp
+      console.log(111,this.manyChecksList);
+      console.log(data);
     },
     async getParams(val){
       console.log(val);
@@ -213,10 +240,9 @@ export default {
         this.manyChecksList = manyRes.data
         this.onlyChecksList = onlyRes.data
       }
-
     },
     changeTab(item){
-      if(this.goodForm.goods_cat){
+      if(this.goodForm.goods_cat || this.$route.query.id){
         this.activeStep = +item.name
       }
 
@@ -249,10 +275,10 @@ export default {
           return false;
         }
         this.goodForm.goods_cat = this.goodForm.goods_cat.join()
-        let onlyAttrs = this.onlyChecksList.filter(item => item.attr_vals !== '').map(item =>{ return {attr_id:item.attr_id,attr_value:item.attr_vals}})
+        let onlyAttrs = this.onlyChecksList.filter(item => item.attr_vals !== '')
+            .map(item =>{ return {attr_id:item.attr_id,attr_value:item.attr_vals}})
 
         let manyChecked = this.manyChecksList.filter(item => item.attr_vals !== null);
-        console.log(manyChecked)
         manyChecked.map(item=>{
           item.attr_vals = item.attr_vals.join(' ');
         })
@@ -262,9 +288,16 @@ export default {
         this.goodForm.goods_number = Number(this.goodForm.goods_number);
         this.goodForm.goods_price = Number(this.goodForm.goods_number);
         this.goodForm.goods_weight = Number(this.goodForm.goods_weight);
-        const {meta} = await addGoodsPost(this.goodForm);
-        if(meta.status !== 201) return this.$message.error(meta.msg);
-        this.$message.success(meta.msg);
+        let res;
+        if(this.$route.query.id !== null){
+          res = await editGoodsPut(this.$route.query.id,this.goodForm);
+          console.log('走这个')
+
+        }else{
+          res = await addGoodsPost(this.goodForm);
+        }
+        if(res.meta.status !== 201&&res.meta.status !== 200) return this.$message.error(res.meta.msg);
+        this.$message.success(res.meta.msg);
         this.$router.back();
       })
 

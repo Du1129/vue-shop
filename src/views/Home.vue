@@ -25,25 +25,16 @@
         <div @click="toggleAsideBar" class="toggleBtn"><i :class="[showAside ? 'el-icon-s-fold' : 'el-icon-s-unfold']"></i></div>
 
         <el-menu
-            default-active="/welcome"
             class="el-menu-vertical-demo"
             background-color="#373d41"
             text-color="#fff"
+            :default-active="path"
             active-text-color="#66b1ff"
             :collapse="!showAside"
             unique-opened
             :router="true"
         >
-          <el-submenu index="0">
-            <template slot="title">
-              <i class="el-icon-s-home"></i>
-              <span>首页</span>
-            </template>
-            <el-menu-item index="/welcome">
-              <i class="el-icon-s-home"></i>
-              <span slot="title">首页</span>
-            </el-menu-item>
-          </el-submenu>
+
           <el-submenu :index="`${index+1}`" :key="index+1" v-for="(item,index) in subMenuList" :popper-append-to-body="false">
             <template slot="title">
               <i :class="iconClass[item.id]"></i>
@@ -60,7 +51,8 @@
       <el-main>
         <el-breadcrumb separator-class="el-icon-arrow-right">
           <el-breadcrumb-item :to="{ path: '/welcome' }">首页</el-breadcrumb-item>
-          <el-breadcrumb-item v-for="item in breadcrumpList" :key="item.key">{{ item.name }}</el-breadcrumb-item>
+          <el-breadcrumb-item >{{ breadCrumbList[0] }}</el-breadcrumb-item>
+          <el-breadcrumb-item >{{ breadCrumbList[1] }}</el-breadcrumb-item>
         </el-breadcrumb>
         <router-view></router-view>
       </el-main>
@@ -71,7 +63,8 @@
 
 <script>
 import {getSubMenuData,getRolesData} from "@/api";
-import {mapState,mapActions} from 'vuex'
+import {mapActions} from 'vuex'
+
 
 export default {
   name: "Home",
@@ -91,7 +84,32 @@ export default {
     }
   },
   computed:{
-    ...mapState(['breadcrumpList']),
+
+    breadCrumbList(){
+      let arr;
+      switch (this.$route.path) {
+        case '/users': arr = ['用户管理','用户列表'];
+        break;
+        case '/goods': arr = ['商品管理','商品列表'];
+        break;
+        case '/categories': arr = ['商品管理','分类列表'];
+        break;
+        case '/params': arr = ['商品管理','分类参数'];
+        break;
+        case '/roles': arr = ['权限管理','角色列表'];
+        break;
+        case '/rights': arr = ['权限管理','权限列表'];
+        break;
+        case '/reports': arr = ['数据统计','数据列表'];break;
+        default : arr = ['订单管理','订单列表']
+
+      }
+      return arr
+
+    },
+    path(){
+      return this.$route.path;
+    }
   },
   created() {
     this.getSubMenu();
@@ -110,8 +128,10 @@ export default {
     async getSubMenu(){
       let {data,meta} = await getSubMenuData();
       if(meta.status !== 200) return this.$message.error(meta.msg);
+      sessionStorage.setItem("subMenuList",JSON.stringify(data))
+
       this.subMenuList = data;
-      // console.log(this.subMenuList)
+      console.log(this.subMenuList)
     },
     async getRolesList(){
       let {data,meta} = await getRolesData();

@@ -5,21 +5,24 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    breadcrumpList:[],
     rolesList:[],
   },
   mutations: {
-    updateBreadcrumpList(state, list) {
-      state.breadcrumpList = list;
-    },
     setRolesList(state, list) {
       state.rolesList = list;
+    },
+    updateRoleRights(state,payload){
+      let index = state.rolesList.findIndex(item => item.id === payload.id);
+      state.rolesList[index].children = payload.data;
     }
   },
   actions: {
     setRolesList({commit},list){
       commit('setRolesList',list)
     },
+    updateRoleRights({commit},payload){
+      commit('updateRoleRights',payload)
+    }
   },
   modules: {
   }

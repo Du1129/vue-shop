@@ -96,9 +96,28 @@ export const updateRolePost =(id,data)=>{
         data
     })
 }
+//删除角色
 export const deleteRoleById = (id) => {
     return request({
         url:`roles/${id}`,
+        method:'delete'
+    })
+}
+
+//角色授权
+export const setRightsPost = (roleId,rids) => {
+    return request({
+        url:`roles/${roleId}/rights`,
+        method:'post',
+        data:{
+            rids
+        }
+    })
+}
+//删除指定角色的指定权限
+export const deleteRightsById = (roleId,rightId) => {
+    return request({
+        url:`roles/${roleId}/rights/${rightId}`,
         method:'delete'
     })
 }
@@ -121,12 +140,25 @@ export const getGoodsDataRequest = (params)=>{
         params
     })
 }
+//根据id获取详情参数
+export const getGoodDataById = (id) =>{
+    return request({url:`goods/${id}`})
+}
 // 添加商品
 export const addGoodsPost = (data) =>{
     return request({
         url:'goods',
         method:'post',
         data
+    })
+}
+//编辑商品
+export const editGoodsPut = (id,data) => {
+    return request({
+        url:`goods/${id}`,
+        method:'put',
+        data
+
     })
 }
 //删除商品
@@ -213,6 +245,27 @@ export const deleteCategoriesById = (id) => {
     return request({
         url:`categories/${id}`,
         method:'delete'
+    })
+}
+
+//订单类
+export const getOrdersData = (params) => {
+    return request({
+        url:`orders`,
+        method:'get',
+        params
+    })
+}
+//根据id查看订单
+export const getOrderById = (id) => {
+    return request({url:`orders/${id}`})
+}
+//修改订单状态
+export const updateOrderPut = (order_id,data) => {
+    return request({
+        url:`orders/${order_id}`,
+        method:'put',
+        data
     })
 }
 

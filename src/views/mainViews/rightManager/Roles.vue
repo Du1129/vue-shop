@@ -20,7 +20,7 @@
                 :class="['expandCenter','bottom_border',index === 0? 'top_border' :'']"
             >
               <el-col :span="5">
-                <el-tag closable>{{item.authName}}</el-tag><i class="el-icon-caret-right"></i>
+                <el-tag closable @close="deleteRightTag(row,item.id)">{{item.authName}}</el-tag><i class="el-icon-caret-right"></i>
               </el-col>
 
               <el-col :span="19">
@@ -30,10 +30,15 @@
                     :key="secondItem.id"
                 >
                   <el-col :span="6">
-                    <el-tag closable type="success">{{secondItem.authName}}</el-tag><i class="el-icon-caret-right"></i>
+                    <el-tag closable type="success" @close="deleteRightTag(row,secondItem.id)">{{secondItem.authName}}</el-tag><i class="el-icon-caret-right"></i>
                   </el-col>
                   <el-col :span="16">
-                    <el-tag v-for="thirdItem in secondItem.children" type="warning" closable :key="thirdItem.id">
+                    <el-tag
+                        v-for="thirdItem in secondItem.children"
+                        type="warning"
+                        closable
+                        @close="deleteRightTag(row,thirdItem.id)"
+                        :key="thirdItem.id">
                       {{thirdItem.authName}}
                     </el-tag>
                   </el-col>
@@ -76,7 +81,7 @@
                 icon="el-icon-setting"
                 size="mini"
                 round
-                @click="setRights(row.id)"
+                @click="setRights(row)"
             >分配角色权限</el-button>
           </template>
         </el-table-column>
@@ -120,27 +125,34 @@
     <el-dialog
         title="分配角色权限"
         :close-on-click-modal="false"
+        :show-close="false"
         :visible.sync="rightDialogFlag"
+        :destroy-on-close="true"
     >
       <el-tree
+          ref="rightTree"
           :data="rightTreeList"
           show-checkbox
-          node-key="rightTree"
-          :default-expanded-keys="[2, 3]"
-          :default-checked-keys="[5]"
+          node-key="id"
+          :default-expand-all="true"
+          :default-checked-keys="defaultCheckedKeys"
           :props="{
             label:'authName',
             children:'children'
           }">
       </el-tree>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="handleRightClose">取 消</el-button>
+        <el-button type="primary" @click="handleRightSubmit">确 定</el-button>
+      </div>
 
     </el-dialog>
   </div>
 </template>
 
 <script>
-import {mapActions, mapMutations, mapState} from 'vuex'
-import {getRolesData, addRolePost, updateRolePost, deleteRoleById,getRightsData} from "@/api";
+import {mapActions, mapState} from 'vuex'
+import {getRolesData, addRolePost, updateRolePost, deleteRoleById,getRightsData,setRightsPost,deleteRightsById} from "@/api";
 
 export default {
   name: "Roles",
@@ -161,34 +173,53 @@ export default {
           {required:true,message:'请输入角色描述',trigger:'blur'}
         ]
       },
-      rightTreeList:[]
+      rightTreeList:[],
+      defaultCheckedKeys:[],
+      settingRightId:null,
     }
   },
   created(){
-    this.updateBreadcrumpList([
-      {key:'rightManager',name:'权限管理'},
-      {key:'roles',name:'角色列表'}
-    ])
-    console.log(this.rolesList)
+
     this.getRightsTree();
   },
   computed:{
     ...mapState(['rolesList']),
     dialogTitle(){
       return this.editId?'编辑角色':'添加角色'
-    }
+    },
   },
   methods:{
-    ...mapMutations(['updateBreadcrumpList']),
-    ...mapActions(['setRolesList']),
+    ...mapActions(['setRolesList','updateRoleRights']),
     async getRightsTree(){
       const {data,meta} = await getRightsData('tree')
       if(meta.status !== 200) return this.$message.error(meta.msg);
       this.rightTreeList = data;
-      console.log(data)
     },
     indexMethod(val){
       return val+1;
+    },
+    deleteRightTag(row,rightId){
+      this.$confirm('即将移除该角色的管理权限, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'error'
+      }).then( async () => {
+        let {data,meta} = await deleteRightsById(row.id,rightId);
+        if(meta.status !== 200) return this.$message.error(meta.msg);
+        this.updateRoleRights({id:row.id,data})
+
+        this.$message({
+          type: 'success',
+          message: meta.msg
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
+
+
     },
     editRole(row){
 
@@ -243,9 +274,38 @@ export default {
 
       })
     },
-    async setRights(id){
-      console.log(id);
+    setRights(row) {
+      console.log(row);
+      this.settingRightId = row.id;
+      // this.currentRole = row;
+      let arr = [];
+      row.children.forEach(item => this.getDefaultKeys(item,arr))
+      this.defaultCheckedKeys = arr;
       this.rightDialogFlag = true;
+    },
+    getDefaultKeys(data,arr){
+      if(!data.children) return arr.push(data.id)
+      data.children.forEach(item => this.getDefaultKeys(item,arr))
+    },
+    handleRightClose(){
+      this.defaultCheckedKeys = [];
+      this.rightDialogFlag = false
+    },
+    async handleRightSubmit(){
+      let arr = this.$refs.rightTree.getCheckedKeys();
+      let arr2 = this.$refs.rightTree.getHalfCheckedKeys();
+      let rids = [...arr2,...arr].join(',')
+      const {meta} = await setRightsPost(this.settingRightId,rids);
+      if(meta.status !== 200) return this.$message.error(meta.msg);
+
+      const {data} = await getRolesData();
+      this.setRolesList(data);
+
+      this.defaultCheckedKeys = [];
+      this.settingRightId = null;
+      this.rightDialogFlag = false
+      this.$message.success(meta.msg);
+
 
     }
   }

@@ -3,19 +3,16 @@
     <template #image>
       <img src="../../assets/img/welcome-empty-bg.png" alt="">
     </template>
-    <el-button type="primary">Get Start<i class="el-icon-right"></i></el-button>
+    <el-button type="primary" @click="$router.push({name:'users'})">Get Start<i class="el-icon-right"></i></el-button>
   </el-empty>
 </template>
 
 <script>
-  import {mapMutations} from 'vuex'
 export default {
   name: "Welcome",
   created(){
-    this.updateBreadcrumpList([]);
   },
   methods:{
-    ...mapMutations(['updateBreadcrumpList'])
   }
 
 }

@@ -26,7 +26,7 @@
         <el-table-column
             prop="goods_name"
             :show-overflow-tooltip="true"
-            label="姓名"
+            label="商品名称"
             width="650">
         </el-table-column>
 
@@ -96,10 +96,6 @@ export default {
   },
   mixins:[myMixin],
   created() {
-    this.updateBreadcrumpList([
-      {key:'goodManager',name:'商品管理'},
-      {key:'goods',name:'商品列表'}
-    ])
     this.getOrSearchGoodsData();
   },
   methods:{
