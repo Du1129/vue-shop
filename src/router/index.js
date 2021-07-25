@@ -25,7 +25,6 @@ const routeMap = {
   rights:{path:'/rights',name:'Rights',component:Rights},
   orders:{path:'/orders',name:'orders',component:Orders},
   goods:{path:'/goods',name:'goods',component:Goods},
-  goodsAdd:{path:'/goods/:from',name:'addOrEdit',component:AddOrEditGood,props:true},
   params:{path:'/params',name:'params',component:Params},
   categories:{path:'/categories',name:'categories',component:Categories},
   reports:{path:'/reports',name:'reports',component:Reports}
@@ -43,7 +42,6 @@ const routes = [
   },
   {
     path:'/home',
-    name:'home',
     component:Home,
     children:[
       {path:'/',redirect:'/welcome'},
@@ -90,6 +88,7 @@ export const initDynamicRoutes = () => {
       routeArr[2].children.push(routeMap[cItem.path])
     })
   })
+  console.log(routeArr)
   //让该路由规则重新启动
   router.addRoutes(routeArr)
 }

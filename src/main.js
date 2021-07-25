@@ -113,6 +113,11 @@ Vue.use(ZkTable)
 
 // Import JsonViewer as a Vue.js plugin
 Vue.use(JsonViewer)
+//动态路由的
+import {initDynamicRoutes} from "@/router";
+if(sessionStorage.getItem("subMenuList")){
+  initDynamicRoutes();
+}
 
 Vue.config.productionTip = false
 

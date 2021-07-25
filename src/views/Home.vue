@@ -100,6 +100,10 @@ export default {
         break;
         case '/rights': arr = ['权限管理','权限列表'];
         break;
+        case '/goods/add': arr = ['商品管理','添加商品'];
+        break;
+        case '/goods/edit': arr = ['商品管理','编辑商品']
+        break;
         case '/reports': arr = ['数据统计','数据列表'];break;
         default : arr = ['订单管理','订单列表']
 

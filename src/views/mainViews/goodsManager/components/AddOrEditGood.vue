@@ -225,8 +225,6 @@ export default {
         item.attr_vals = item.attr_vals?item.attr_vals.split(' '):null
       });
       this.manyChecksList = manyTemp
-      console.log(111,this.manyChecksList);
-      console.log(data);
     },
     async getParams(val){
       console.log(val);
@@ -266,7 +264,7 @@ export default {
       this.goodForm.pics = this.goodForm.pics.filter((item)=>{
         return item.pic !== response.data.tmp_path;
       })
-      console.log(response.data.url);
+      // console.log(response.data.url);
     },
     handleSubmit(){
       this.$refs.goodsForm.validate(async (valid)=>{
@@ -274,6 +272,7 @@ export default {
           this.$message.error('请完善商品信息')
           return false;
         }
+        console.log('第一次',this.goodForm);
         this.goodForm.goods_cat = this.goodForm.goods_cat.join()
         let onlyAttrs = this.onlyChecksList.filter(item => item.attr_vals !== '')
             .map(item =>{ return {attr_id:item.attr_id,attr_value:item.attr_vals}})
@@ -283,14 +282,16 @@ export default {
           item.attr_vals = item.attr_vals.join(' ');
         })
         let manyAttrs = manyChecked.map(item => {return {attr_id:item.attr_id,attr_value:item.attr_vals}})
+
+        
         this.goodForm.attrs = [...onlyAttrs,...manyAttrs]
         console.log(this.goodForm);
         this.goodForm.goods_number = Number(this.goodForm.goods_number);
-        this.goodForm.goods_price = Number(this.goodForm.goods_number);
+        this.goodForm.goods_price = Number(this.goodForm.goods_price);
         this.goodForm.goods_weight = Number(this.goodForm.goods_weight);
         let res;
-        if(this.$route.query.id !== null){
-          res = await editGoodsPut(this.$route.query.id,this.goodForm);
+        if(this.$route.query.id){
+          res = await editGoodsPut(+this.$route.query.id,this.goodForm);
           console.log('走这个')
 
         }else{
